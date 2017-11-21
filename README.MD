@@ -693,58 +693,44 @@ protected Filter getExceptionTranslationFilter() {
 
 集成uniauth的子系统都需要配置一个com.dianrong.common.uniauth.common.client.DomainDefine类型的bean，用于自定义子系统的各种配置。DomainDefine中的各种配置说明如下：
 
-```table
-配置项       类型     是否必须    说明
-domainCode  String   是         指定当前集成系统的域名code，该code与zk和techops的域名模块中配置的域名code要一致。通过该code,uniauth能找到该域的配置信息    必须要配置    
-userInfoClass   String  否   指定集成系统自定义的UserExtInfo实现 无   
-比如可以配置成这样：com.dianrong.common.techops.sscustom.TechOpsUserExtInfo，该实现必须集成自
-uniauth提供的UserExtInfo。可以在登陆之后通过LoginUserInfoHolder.getLoginUserInfo()获取到该实现。其中有
-uniauth自动填充的用户信息，权限信息等。
-集成系统有需求
-想自己实现登陆
-用户对象模型
- 
-3   rejectPublicInvocations boolean 否   指定是否拒绝请求任何未明确配置权限控制的资源  false   该参数值默认是false。比如说 aaaa/bbbb/ccc 这个请求没有添加任何spring-security的权限控制(hasRole这种)。默认是可以请求的。但是如果将参数设置为true，那请求就会被拒绝。  设置为true是以防万一某些未注意到资源被外部访问到   
-4   customizedSavedRequestUrl   String  否   指定在首先访问集成系统之后登陆成功跳转的地址  无   该地址可以配置成相对的（相对于集成系统的地址）或者绝对的。比如说：你首先访问crm，然后crm跳转到cas登陆首页，你在cas首页输入正确账号密码登陆，最后就会跳转到该地址。 比如你前后端分离，需要后端认证成功之后跳转前端的某个页面     
-5   customizedLoginRedirecUrl   String  否   指定直接从cas首页登陆成功之后跳转的地址   无   该地址可以配置成相对的（相对于集成系统的地址）或者绝对的。比如说：你直接打开浏览器访问cas首页，然后输入正确账号密码登陆，就会跳转到该地址。与customizedSavedRequestUrl的主要区别是，是否是先访问集成系统然后跳转到cas。 同上。可以将customizedSavedRequestUrl和customizedLoginRedirecUrl配置成一样的，这样不管怎样都会跳转同一个地址  
-6   useAllDomainUserInfoShareMode   boolean 否   是否开启多域用户信息共享功能  false   该功能的意思就是在登陆的时候，一次性将该用户对应所有域的权限信息都加载到内存中。如果A，B两个域共享了session的话。访问A域登陆成功，然后直接访问B域，不会redirect到cas，然后生成st，然后走验证这一条线。而是直接就拥有了该域下用户的各种信息。  多个系统共享session，希望在登陆成功之后，各个系统能够直接访问，而不走cas验证。     
-7   serviceTicketValidateWithInnerAddress   boolean 否   是否使用cas的内部地址进行serviceTicket验证   false   
-通过内部地址访问cas进行ticket验证,保证了稳定性和速度.
-企业内部的系统按理说都应该通过内部地址进行service ticket的验证处理    >= 1.0.84-SNAPSHOT
-8   controlType String  否   自动加载Techops中配置的权限数据进行权限控制   URI_PATTERN 
-可选配置值为:
-URI_PATTERN 主动加载Techops中配置的UR_PATTERN类型权限进行权限控制
-REGULAR_PATTERN 主动加载Techops中配置的REGULAR_PATTERN类型权限进行权限控制
-ALL URI_PATTERN和REGULAR_PATTERN同时起效
-NONE URI_PATTERN和REGULAR_PATTERN都不起效
-比如有些系统比较喜欢使用Regular来匹配请求,则可以将该配置修改为REGULAR_PATTERN。 同时在Techops配置Regular_pattern类型的权限进行权限控制。
-相关参考wiki:
-业务系统集成Uniauth指导手册 3.39节
->= 1.0.84-SNAPSHOT
-10  authenticationType  String  否   配置集成系统支持的认证方式集合 ALL 
-说明: 可以通过','来分隔连接配置,以达到同时支持多种认证方式的目的. 比如: CAS,BASIC_AUTH. 表示同时支持CAS和BasicAuth两种方式.
-可选配置:
-CAS 支持通过Cas颁发的ServiceTicket的方式登录系统
-JWT 支持通过JWT的方式登录系统
-BASIC_AUTH 支持通过BasicAuth的方式访问系统
-ALL 三种方式同时支持.等同于配置CAS,JWT,BASIC_AUTH.
-1 兼容以前的功能.用于只需要CAS的认证方式,可以在此配置成CAS.
-2 新增的BasicAuth功能可以通过该配置启用.
-JWT:
->= 2.0.07-SNAPSHOT
-BASIC_AUTH:
->= 2.0.37.RELEASE
-11  
-innerCacheUseRedis
-boolean 否   SS-Client的内部缓存是否使用Redis false   
-JWT和BasicAuth的引入,SDK中引入了对缓存的需求.
-目前缓存有两种实现:
-1 基于HashMap的内存实现, 默认选择(innerCacheUseRedis = false)
-2 使用Redis作为缓存实现.(innerCacheUseRedis = true)
-如果该配置为true,则需要考虑配置参数:innerCacheRedisConfiguration. 配置参数innerCacheRedisConfiguration说明
- 如果应用的访问量比较大,可以考虑使用Redis来缓存通过JWT和BasicAuth的方式访问系统的用户信息.
-同时在多实例的情况,Redis还能提供访问用户信息同步的功能.
+```config
+# 指定当前集成系统的域名code，该code与zk和techops的域名模块中配置的域名code要一致。通过该code,uniauth能找到该域的配置信息
+domainCode
 
+# 指定集成系统登录成功之后返回的登录用户对象实现, 该实现必须集成自uniauth提供的UserExtInfo。其中有uniauth自动填充的用户信息，权限信息等。
+userInfoClass
+
+# 指定是否拒绝请求任何未明确配置权限控制的资源。比如：aaaa/bbbb/ccc这个请求没有添加任何spring-security的权限控制(hasRole这种)，默认是可以请求到的。但是如果将参数设置为true，那请求就会被拒绝。
+rejectPublicInvocations
+
+# 指定通过访问子系统跳转到统一登录页面，登录成功之后跳转的地址，可为绝对地址或相对地址，需要与`customizedLoginRedirecUrl`相区别。
+customizedSavedRequestUrl
+
+# 直接访问统一登录页面，登录成功之后的跳转地址，需要与`customizedSavedRequestUrl`相区别。
+customizedLoginRedirecUrl
+
+# uniauth自动起效的权限控制类型。
+# 可选配置值为:
+# URI_PATTERN（默认） 主动加载Techops中配置的UR_PATTERN类型权限进行权限控制
+# REGULAR_PATTERN 主动加载Techops中配置的REGULAR_PATTERN类型权限进行权限控制
+# ALL URI_PATTERN和REGULAR_PATTERN同时起效
+# NONE URI_PATTERN和REGULAR_PATTERN都不起效
+controlType
+
+# 配置集成系统支持的认证方式集合。可以通过','来分隔连接配置，以达到同时支持多种认证方式的目的. 比如: CAS,BASIC_AUTH，表示同时支持CAS和BasicAuth两种方式。
+# 可选配置:
+# CAS 支持通过Cas颁发的ServiceTicket的方式登录系统
+# JWT 支持通过JWT的方式登录系统
+# BASIC_AUTH 支持通过BasicAuth的方式访问系统
+# ALL 三种方式同时支持.等同于配置CAS,JWT,BASIC_AUTH.
+authenticationType
+
+# ssclient的内部缓存是否使用Redis作为实现。
+# 目前缓存有两种实现:
+# 1 基于HashMap的内存实现。默认选择(innerCacheUseRedis = false)
+# 2 使用Redis作为缓存实现。(innerCacheUseRedis = true)
+# 如果该配置为true,则需要考虑配置参数:innerCacheRedisConfiguration.
+innerCacheUseRedis
 ```
 
 
