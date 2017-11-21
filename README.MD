@@ -19,7 +19,7 @@ Uniauth项目的开源QQ交流群号: 463056564  欢迎您的加入
 ### 1.2.uniauth技术选型
 
 基于`jdk7`,使用`spring mvc4.2+mybatis3+spring security4+cas+cxf`作为基础框架，数据库为`mysql5.7`，配置管理使用`zookeeper3.4`，`redis` 作为可选项用于保存ticket和session信息，前端使用`angularJS 1.x`；
-
+ 
 <a id='quickstart'/>
 
 ## 二. 快速开始
@@ -38,23 +38,35 @@ gradle warTechopsWebsite
 
 ### 2.2.初始化数据库
 
-在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`  中所有的脚本；
+在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`中的脚本。为了方便执行初始化脚本，某些版本中将多个rt的脚本集合到一起，比如：rt115-rt176-all-in-one.sql，代表将rt115到rt176的脚本集合在了一个脚本文件中。；
 管理员账号：`first.admin@test.com`，密码： `$1234qweR`
 
-### 2.3.配置tomcat7
+### 2.3.配置`tomcat7`
 
 #### (1) **添加环境参数**
 
-修改tomcat bin目录中` catalina.sh`文件，在正文首行后加入下面环境参数：
-
+##### linux环境
+修改tomcat bin目录中`catalina.sh`文件，在正文首行后加入下面环境参数：
 ``` shell
-# log out
+# log path
 JAVA_OPTS="$JAVA_OPTS -Dcatalina.logs=/var/lib/tomcat/logs"
 
 # zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
 DR_CFG_ZOOKEEPER_ENV_URL="10.8.12.85:2181,10.8.12.85:2182,10.8.12.85:2183"
 
 export DR_CFG_ZOOKEEPER_ENV_URL
+```
+
+##### windows环境
+修改tomcat bin目录中`catalina.bat`文件，可在`set "JAVA_OPTS=%JAVA_OPTS% %LOGGING_CONFIG%"`这一命令下加入下面环境参数：
+``` bat
+# log path
+set DR_CFG_ZOOKEEPER_ENV_URL=-DDR_CFG_ZOOKEEPER_ENV_URL=10.8.12.85:2181,10.8.12.85:2182,10.8.12.85:2183
+set "JAVA_OPTS=%JAVA_OPTS% %DR_CFG_ZOOKEEPER_ENV_URL%"
+
+# zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
+set APPLICATION.LOGS=-Dcatalina.logs=D:\logs\tomcat\tomcat8080
+set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 ```
 
 #### (2) **修改端口**
