@@ -731,8 +731,44 @@ authenticationType
 # 2 使用Redis作为缓存实现。(innerCacheUseRedis = true)
 # 如果该配置为true,则需要考虑配置参数:innerCacheRedisConfiguration.
 innerCacheUseRedis
+
+# 当innerCacheUseRedis=true时，配置redis的连接参数。
+innerCacheRedisConfiguration
 ```
 
+##### 5.1.3.1 innerCacheRedisConfiguration配置项说明
+
+```config
+# redis的连接类型。有三个选项：SINGLE 单节点(默认), CLUSTER 集群, SENTINEL 哨兵模式.
+type
+
+# 使用的数据库的DataBase，默认为0。
+database
+
+# 连接Redis的密码。
+password
+
+# 连接超时的毫秒数，默认为3000。
+timeout
+
+# 单节点模式下Redis的Host。
+host	
+
+# 单节点模式下Redis的端口。
+port	
+
+# 哨兵模式的Redis的master节点名称。
+master	
+
+# 哨兵模式下,哨兵的节点集合。比如配置:127.0.0.1:8081,127.0.0.1:8082,127.0.0.1:8083。
+sentinels	
+
+# 集群模式下，集群节点集合。
+clusters
+
+# 集群模式下，客户端请求失败之后，转发的最大次数，默认为5。
+maxRedirects	5	
+```
 
 ### 5.2.非Spring系统
 
