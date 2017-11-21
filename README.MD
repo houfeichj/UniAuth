@@ -767,7 +767,7 @@ sentinels
 clusters
 
 # 集群模式下，客户端请求失败之后，转发的最大次数，默认为5。
-maxRedirects	5	
+maxRedirects
 ```
 
 ### 5.2.非Spring系统
@@ -866,5 +866,13 @@ public static void main(String args[]) {
 3. **PRIVILEGE**：
 
     各个业务系统可以根据自己的需要定义权限控制点列表，这些权限用于保护任何需要保护的资源，比如通过SpEL表达式principal.hasPrivilege('xxx')。注意：不像` URI_PATTERN`，这种权限类型不参与Spring Security的内部权限控制机制，适用于纯业务级别权限控制点的定义。
+    
+4. **REGULAR_PATTERN**：
 
-上述3种权限类型已经基本涵盖了大部分业务需要，如果不满足，可以和我们联系，双方讨论后可以依需添加新的权限类型。
+    根据正则表达式来匹配请求，然后进行权限判断。该类型与`URI_PATTERN`权限类型，区别是：`URI_PATTERN`是根据请求的url唯一匹配一个权限，然后判断当前用户是否有对应权限访问。但是`REGULAR_PATTERN`将请求url依次匹配当前登录用户的所有regular_pattern类型权限，如果其中某一个权限判定通过，则判断有权限访问。
+    
+### 7.2 Uniauth支持jwt
+
+在DomainDefine的配置参数中已经提到了authenticationType是可以配置为JWT的。集成unauth的子系统是可以支持JWT访问的。
+
+### 7.3 集成uniauth的子系统支持basic auth
