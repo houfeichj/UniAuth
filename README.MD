@@ -96,8 +96,9 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 /com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false  // 关闭uniauth-server的api访问控制
 /com/dianrong/cfg/1.0.0/uniauth/redis.password          // 指定redis密码，如果没有密码则不配置该节点。
 /com/dianrong/cfg/1.0.0/uniauth/redis.type              // 采用redis的类型.可配置值为:SINGLE(默认值),CLUSTER,SENTINEL。
-# 根据redis.type的配置值，还需要配置redis的其他配置值，具体请查看(#redis-config)
 ```
+根据redis.type的配置值，还需要配置redis的其他配置值，[具体请查看](#redis-config)
+
 zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改。
 
 * linux环境：   在catalina.sh中设置 `export DR_CFG_ZOOKEEPER_BASE_PATH=/newPath`
@@ -187,9 +188,11 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 ```
 
 <a id='redis-config'/>
+
 #### 根据配置的redis.type来配置redis
 
 ##### a 单节点模式
+
 ``` shell
 # redis的host。
 /com/dianrong/cfg/1.0.0/uniauth/redis.host
@@ -209,6 +212,7 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 ```
 
 ##### c 集群模式
+
 ``` shell
 # 集群中请求失败之后，最多的转发次数，默认为:5。
 /com/dianrong/cfg/1.0.0/uniauth/redis.maxRedirects
@@ -217,32 +221,49 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 /com/dianrong/cfg/1.0.0/uniauth/redis.clusters            
 ```
 
-### 4.2. Cas 配置
-  /com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure     是否采用https的形式写cookie
-  /com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint   配置的uniauth-server的地址。比如：http://localhost:8090/uniauth/ws/rs
-  /com/dianrong/cfg/1.0.0/uniauth/cas_server      cas的地址 。比如：http://localhost:8080/cas
-  /com/dianrong/cfg/1.0.0/uniauth/cas_server.internal_address  cas服务器内部访问地址,不走dns域名解析的地址.一般为ip+port.  比如:http://10.8.12.218:8080/cas
-  /com/dianrong/cfg/1.0.0/uniauth/cas.st_use_times     配置cas的service ticket可验证的次数，默认是2次。其实正常情况下只验证一次是最安全的。
-  /com/dianrong/cfg/1.0.0/uniauth/cas.verify_code.show   是否将短信和邮箱验证码返回给前端,可配置为true或false,默认为false. 一般只能在dev和demo环境配置.''
- /com/dianrong/cfg/1.0.0/uniauth/cas.check.staff.no  是否开启员工号的验证. 默认为false. 可以配置true, false.
+### 4.2. cas配置
+
+``` shell
+# 是否采用https的形式写cookie，默认为false。
+/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure
+
+# 配置的uniauth-server的地址，比如：http://localhost:8090/uniauth/ws/rs。
+/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint
+
+# cas的地址，比如：http://localhost:8080/cas。
+/com/dianrong/cfg/1.0.0/uniauth/cas_server
+
+# cas服务器内部访问地址，不走dns域名解析的地址。一般配置为ip+port，比如:http://192.168.1.1:8080/cas。
+/com/dianrong/cfg/1.0.0/uniauth/cas_server.internal_address
+
+# 配置cas的service ticket可验证的次数，默认是2次，正常情况下1次是最安全的。
+/com/dianrong/cfg/1.0.0/uniauth/cas.st_use_times
+
+# 是否将短信和邮箱验证码返回给前端，可配置为true或false，默认为false。该配置参数一般配置在开发和测试环境，方便快速验证通过。
+/com/dianrong/cfg/1.0.0/uniauth/cas.verify_code.show
  
+# 配置true或false，默认为false。是否部署多个cas，将ticket存储在redis中。
+/com/dianrong/cfg/1.0.0/uniauth/cas.iscluster
+```
 
-  – redis相关
-  /com/dianrong/cfg/1.0.0/uniauth/cas.iscluster          true or false  cas是否采用redis存储登陆的ticket
+#### 覆盖cas默认的webflow，tgc生成秘钥
 
-  /com/dianrong/cfg/1.0.0/uniauth/cas.webflow.encryption.key     cas中webflow的加密key
-  /com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key          cas中webflow的签名的key
-  /com/dianrong/cfg/1.0.0/uniauth/cas.tgc.encryption.key             cas中tgc加密的key 
-  /com/dianrong/cfg/1.0.0/uniauth/'cas.tgc.signing.key                  cas中tgc的签名的key  
-  [参考文档](https://apereo.github.io/2016/04/08/commonsvulndisc/)
-  # 配置cas execution 和 webflow 对象encryption, signing 的密钥, 这一块是为安全考虑(Optional)
+这些配置主要是为了安全着想(optional)，[参考文档](https://apereo.github.io/2016/04/08/commonsvulndisc/)。
 
-具体步骤：
-1. 新增四个zookeeper节点:
-/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.encryption.key MvU58Xs7fOsGQL47K6AXVy7qyDzaSO7_Khh1nC5gbLo
-/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.signing.key 8hALJmFBEq1X4TD824cg15P5U8BjNrdoF9-XqH1KZQ8UdzFRmT_dX6Ao2M46hiCpvXRvRv-HhkQnpmPtG8oA_w
-/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.encryption.key C4SBogp_badO82wC
-/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key 8_G6JMTdkxiJ5rN0tqFrEOQj200VoxGrRzAp7bvjMFSGdA2IOzdFRsGv3m3GMNVmoSJ0O4miIBrYCHx_FWP4oQ
+``` shell
+# cas中webflow的加密key
+/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.encryption.key
+
+# cas中webflow的签名的key
+  /com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key
+
+# cas中tgc加密的key 
+/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.encryption.key
+
+# cas中tgc的签名的key
+/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.signing.key                  
+```
+
 这四个节点的值通过下面这个工具生成，具体步骤：
 a. git clone https://github.com/mitreid-connect/json-web-key-generator.git
 b. 切换到json-web-key-generator目录
@@ -253,131 +274,102 @@ java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -
 java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 512
 java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 96
 java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 512
-得到四个k, 按顺序赋值给上面的四个zookeeper节点
+得到四个k，按顺序赋值给上面的四个zookeeper节点。
 
-  
-  /com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.private.key  生成jwt的私钥
-  /com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.public.key    验证jwt的公钥
-  /com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.suffix  jwt存放的cookie的后缀. 默认jwt存放的cookie为: uniauth_jwt. 如果配置了后缀:_dev. 则存放jwt的cookie为: uniauth_jwt_dev.
- /com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.domain  jwt存放的cookie的域.没有默认值,只存放在当前cas所在的域. 可以设置类似.dianrong.com 这样的域,即可跨域访问.
-  /com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.secure  true或false. 是否是https才设置cookie. 默认为false.
-   
- ### 4.3. 集成系统配置
- 下面的`xxx`就是定义好的`domain`，如techops,crm,pms,cms,etc
-   /com/dianrong/cfg/1.0.0/uniauth/domains.xxx             xxx系统的地址。比如：http://localhost:8100/techops/
-   /com/dianrong/cfg/1.0.0/uniauth/domains.xxx.loginPage      如果xxx系统采用自定义登陆页面，则此处配置其自定义登陆页面地址。
-   /com/dianrong/cfg/1.0.0/uniauth/domains.xxx.auth_fail_url      如果xxx系统在进行st认证失败的时候跳转到失败页面（需要客户端集成做一些配置）。
-  /com/dianrong/cfg/1.0.0/uniauth/domains.xxx.showInHomePage   明确指定是否在uniauth登陆页能跳转到xxx系统的登陆页（是否出现选项框中），例如：true
-  /com/dianrong/cfg/1.0.0/uniauth/domains.xxx.logout_address   指定xxx系统的统一登出地址, 如果不指定,则采用默认的地址登出. 内部地址,不走外网.
-  /com/dianrong/cfg/1.0.0/uniauth/domains.xxx.auth_fail_url   指定ticket验证失败之后的跳转地址(需要使用uniauth提供的SSAuthenticationFailureHandler作为CasAuthentication的authenticationFailureHandler).
+#### 配置cas生成jwt的秘钥对
 
-  ### 4.4. 配置邮箱
-   /com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.host    邮箱服务器host，比如：smtp-dev.sl.com（默认值）
-   /com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.port    邮箱服务器port，比如：25（默认值）
-   /com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.femail   uniauth系统邮件的发送者，比如：TechOps-Notification<noreply@dianrong.com>（默认值）
-
-
-
-### 4.5. Uniauth-Server 配置
-   — redis
-   /com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.database       uniauth-server使用redis缓存指定的database,如果不指定该值,则以redis.database配置为准.
-   /com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.use_redis      配置true或者false. 默认值为true.在Uniauth-server中是否使用redis作为缓存实现.
-   /com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.expiration    uniauth-server使用的redis缓存的过期秒数. 默认为3600
-
-   /com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch            配置为true 或 false。 用于指定是否开启uniauth-server api访问的权限控制功能，默认为true。
-   /com/dianrong/cfg/1.0.0/uniauth/apicall.jwt.security.key        配置api访问控制采用jwt的秘钥信息
-   /com/dianrong/cfg/1.0.0/uniauth/apicall.techops.pwd            配置api访问控制techops的密码字符串
-   /com/dianrong/cfg/1.0.0/uniauth/tenancyIdentity.check.switch   配置true 或 false,默认为false. 用于指定是否强制的验证访问uniauth-server请求是否带有租户的验证信息.
-     /com/dianrong/cfg/1.0.0/uniauth/uniauth.contextpath              指定uniauth-server的上下文，默认为空
-   /com/dianrong/cfg/1.0.0/uniauth/uniauth.server.api.contact   说明uniauth-server api的联系人名单
-
-### 4.6. uniauth的其他配置
-   /com/dianrong/cfg/1.0.0/uniauth/global.var.queue.old.impl   配置为true 或 false. 指定是否采用旧的GlobalVarQueue实现. 默认为false.
-
-### 4.1. 核心配置
-
-#### (1) cas本身的配置
+生产环境建议重新生成，然后配置，为了安全着想。
 
 ``` shell
-# 是否采用https的形式写cookie,生产为true
-/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure true
+# 生成jwt的私钥
+/com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.private.key
 
-# cas的地址 。比如：http://localhost:8080/cas
-/com/dianrong/cfg/1.0.0/uniauth/cas_server http://localhost:8081/cas
+# 验证jwt的公钥
+/com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.public.key
 
-# 配置cas的service ticket可验证的次数，现在默认是2次。其实正常情况下只验证一次是最安全的。
-/com/dianrong/cfg/1.0.0/uniauth/cas.st_use_times 2
+# jwt存放的cookie的后缀。默认jwt存放的cookie为: uniauth_jwt. 如果配置了后缀：_dev，则存放jwt的cookie为：uniauth_jwt_dev。
+/com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.suffix
 
-# 配置true 或 false。 用于指定是否强制的验证访问uniauth-server请求是否带有租户的验证信息
-/com/dianrong/cfg/1.0.0/uniauth/tenancyIdentity.check.switch true
+# jwt存放的cookie的域。默认情况下jwt只存放在当前cas所在的域，可以设置类似.dianrong.com这样的域，使得jwt能够跨域被访问。
+/com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.domain
 
-# 配置的uniauth-server的地址。比如：http://localhost:8090/uniauth/ws/rs
-/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8090/uniauth/ws/rs
-
-# 配置cas execution 和 webflow 对象encryption, signing 的密钥, 这一块是为安全考虑(Optional)
-
-具体步骤：
-1. 新增四个zookeeper节点:
-/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.encryption.key MvU58Xs7fOsGQL47K6AXVy7qyDzaSO7_Khh1nC5gbLo
-/com/dianrong/cfg/1.0.0/uniauth/cas.tgc.signing.key 8hALJmFBEq1X4TD824cg15P5U8BjNrdoF9-XqH1KZQ8UdzFRmT_dX6Ao2M46hiCpvXRvRv-HhkQnpmPtG8oA_w
-/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.encryption.key C4SBogp_badO82wC
-/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key 8_G6JMTdkxiJ5rN0tqFrEOQj200VoxGrRzAp7bvjMFSGdA2IOzdFRsGv3m3GMNVmoSJ0O4miIBrYCHx_FWP4oQ
-这四个节点的值通过下面这个工具生成，具体步骤：
-a. git clone https://github.com/mitreid-connect/json-web-key-generator.git
-b. 切换到json-web-key-generator目录
-c. 使用maven命令 mvn package 
-d. 切换到json-web-key-generator目录下的 target目录
-e. 分别执行 
-java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 256
-java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 512
-java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 96
-java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 512
-得到四个k, 按顺序赋值给上面的四个zookeeper节点
-
-```
-
-#### (2) 邮箱配置
-
-邮箱主要是为了验证码发送，密码重置
-
-``` shell
-# 邮箱服务器host，比如：smtp-dev.sl.com（默认值）
-/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.host
-
-# 邮箱服务器port，比如：25（默认值）
-/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.port
-
-# uniauth系统邮件的发送者，比如：TechOps-Notification<noreply@dianrong.com>（默认值）
-/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.femail
-```
-
-### 4.2. redis配置
-
-``` shell
-# 哨兵模式 (请自行指定具体的master, password, sentinels配置必须为sentinel的地址和端口)
-/com/dianrong/cfg/1.0.0/uniauth/redis.database 0      # redis的数据库index
-/com/dianrong/cfg/1.0.0/uniauth/cas.iscluster true    # true or false  cas是否采用redis存储登陆的ticket
-/com/dianrong/cfg/1.0.0/uniauth/redis.password ''     # 指定redis密码
-/com/dianrong/cfg/1.0.0/uniauth/redis.master mymaster # 指定master节点name
-/com/dianrong/cfg/1.0.0/uniauth/redis.sentinels 10.18.19.51:5000,10.18.19.101:5000 # 指定 redis集群节点列表,例如：10.18.19.67:5000,10.18.19.51:5000,10.18.19.101:5000
+# 是否是https才设置cookie，默认为false。
+/com/dianrong/cfg/1.0.0/uniauth/authentication.jwt.cookie.secure
 ```
 
 ### 4.3. 集成系统配置
 
-下面的`xxx`就是定义好的`domain`，如techops,crm,pms,cms,etc
+下面的`xxx`就是定义好的`domain`，如techops,crm,pms,cms,etc。
 
 ``` shell
 # xxx系统的地址。比如：http://localhost:8100/techops/
-/com/dianrong/cfg/1.0.0/uniauth/domains.xxx http://localhost:8100/techops/
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx
 
-# 如果xxx系统采用自定义登陆页面，则此处配置其自定义登陆页面地址。
-/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.loginPage http://localhost:8100/techops/login.jsp
+# xxx系统自定义登陆页面地址。
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.loginPage
 
 # 如果xxx系统在进行st认证失败的时候跳转到失败页面（需要客户端集成做一些配置）。
-/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.auth_fail_url http://localhost:8100/techops/login_fail.jsp
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.auth_fail_url
 
-# 明确指定是否在uniauth登陆页能跳转到xxx系统的登陆页（是否出现选项框中），例如：true
-/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.showInHomePage true
+# 配置true或false，默认为false。自定义登录页面的系统(配置了domains.xxx.loginPage)是否在cas统一登录页面的下拉框中展示。
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.showInHomePage
+
+# 指定xxx系统的统一登出地址。可配置为内网地址，更稳定速度更快。如不配，则根据domains.xxx地址进行统一登出。
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.logout_address
+
+# 指定ticket验证失败之后的跳转地址（）需要使用uniauth提供的SSAuthenticationFailureHandler作为CasAuthentication的authenticationFailureHandler）
+/com/dianrong/cfg/1.0.0/uniauth/domains.xxx.auth_fail_url   
+```
+
+### 4.4. 配置邮箱
+
+``` shell
+# 邮箱服务器host，比如：smtp-dev.sl.com（默认值。
+/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.host
+
+# 邮箱服务器port，比如：25（默认值）。
+/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.port
+
+# 系统邮件的发送者，比如：TechOps-Notification<noreply@dianrong.com>（默认值）。
+/com/dianrong/cfg/1.0.0/uniauth/internal.mail.smtp.femail   
+```
+
+### 4.5. uniauth-Server 配置
+
+``` shell
+# uniauth-server使用redis缓存指定的database。如果不指定该值，则以redis.database配置为准。
+/com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.database
+
+# 配置true或false，默认值为true。在Uniauth-server中是否使用redis作为缓存实现。
+/com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.use_redis
+
+# uniauth-server使用的redis缓存的过期秒数，默认为3600。
+/com/dianrong/cfg/1.0.0/uniauth/redis.uniauth.expiration   
+
+# 配置true或false，默认为true。用于指定是否开启uniauth-server api访问的权限控制。
+/com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch
+
+# 配置api访问控制采用jwt的秘钥。如apicall.check.switch配置为false，则不需要配置。
+/com/dianrong/cfg/1.0.0/uniauth/apicall.jwt.security.key
+
+# 配置api访问控制techops的密码字符串
+/com/dianrong/cfg/1.0.0/uniauth/apicall.techops.pwd
+
+# 配置true或false，默认为false。用于指定是否强制api访问的租户标识信息，如果不验证，则采用默认的dianrong作为租户标识。
+/com/dianrong/cfg/1.0.0/uniauth/tenancyIdentity.check.switch
+
+# swaggger配置，兼容uniauth-server发布之后，带有contextpath处理有问题。
+/com/dianrong/cfg/1.0.0/uniauth/uniauth.contextpath
+
+#  说明uniauth-server api的联系人名单。
+/com/dianrong/cfg/1.0.0/uniauth/uniauth.server.api.contact  
+```
+
+### 4.6. uniauth的其他配置
+
+``` shell
+# 配置为true或false，默认为false。指定是否采用旧的GlobalVarQueue实现。
+/com/dianrong/cfg/1.0.0/uniauth/global.var.queue.old.impl 
 ```
 
 <a id='integration'/>
