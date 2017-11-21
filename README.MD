@@ -86,13 +86,13 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 
 ### 2.4.配置zookeeper
 
-在zokeeper中`create`下面节点数据
+在zokeeper中`create`以下节点(当然需要先创建`/com`，`/com/dianrong`，`/com/dianrong/cfg`，`/com/dianrong/cfg/1.0.0`，`/com/dianrong/cfg/1.0.0/uniauth`这5个父节点)
 
 ``` shell
 /com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure false   // 线上环境一定是true
 /com/dianrong/cfg/1.0.0/uniauth/cas_server http://localhost:8081/cas // cas服务器的部署base地址
 /com/dianrong/cfg/1.0.0/uniauth/domains.techops http://localhost:8082/techops // techops的部署base地址
-/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8080/uniauth/ws/rs  // uniauth的webservice endpoint地址， base+/ws/rs
+/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8080/uniauth/ws/rs  // uniauth的webservice endpoint地址，base+/ws/rs
 /com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false //指定uniauth-server的api访问是否需要权限验证. 默认为true
 /com/dianrong/cfg/1.0.0/uniauth/apicall.techops.pwd =610{8(lxt42nslg*k9q9|5z!:3@~9e72#|rw1*6arz5zad@7+muh!e-w792 // apicall.check.switch为true的时候,必须设置该节点,指定techops和cas访问uniauth-server接口的密码. 该值与api_caller_info表中的password值一致即可
 ```
