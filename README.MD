@@ -255,7 +255,7 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 /com/dianrong/cfg/1.0.0/uniauth/cas.webflow.encryption.key
 
 # cas中webflow的签名的key
-  /com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key
+/com/dianrong/cfg/1.0.0/uniauth/cas.webflow.signing.key
 
 # cas中tgc加密的key 
 /com/dianrong/cfg/1.0.0/uniauth/cas.tgc.encryption.key
@@ -264,6 +264,7 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 /com/dianrong/cfg/1.0.0/uniauth/cas.tgc.signing.key                  
 ```
 
+```code
 这四个节点的值通过下面这个工具生成，具体步骤：
 a. git clone https://github.com/mitreid-connect/json-web-key-generator.git
 b. 切换到json-web-key-generator目录
@@ -275,10 +276,11 @@ java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -
 java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 96
 java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -s 512
 得到四个k，按顺序赋值给上面的四个zookeeper节点。
+```
 
 #### 配置cas生成jwt的秘钥对
 
-生产环境建议重新生成，然后配置，为了安全着想。
+非必须配置，但是为了安全着想，还是重新生成一份来配置。
 
 ``` shell
 # 生成jwt的私钥
@@ -406,51 +408,57 @@ java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -
 不要把下面这一段配置放到SpringMVC对应的xml当中，必须放置到Spring Bean的xml当中。
 
 ```xml
-<import resource="classpath:ss-uniauth-client.xml" /> //导入ss-client中的Spring配置文件
+<import resource="classpath:ss-uniauth-client.xml"/> //导入ss-client中的Spring配置文件
+
 <bean id="domainDefine" class="com.dianrong.common.uniauth.common.client.DomainDefine">
-    <property name="domainCode" value="techops">
-    </property> //定义自身域编码，和Uniauth的zookper（有domains.前缀），TechOps中的域定义保持一致
-    <!-- <property name="userInfoClass" value="com.dianrong.common.techops.sscustom.TechOpsUserExtInfo"></property> -->
-    //定义UserDetails扩展属性类，该类从UserExtInfo扩展，如果不需要则可以不配置
-    //如果设置成true，则如果当前请求的url没有找到任何匹配的url定义，就会拒绝访问
-    //如果设置成true，需要去掉<sec:intercept-url pattern="/**" access="isAuthenticated()"/>，因为这条定义是涵盖任何url的默认定义
-    <property name="rejectPublicInvocations" value="false"></property>
-    //在访问业务域的某个url时，如果session失效或从未登录过，这个url地址会被业务域服务器记下来，然后转向到cas登录页；
-    //登录成功后会再转向回来到这个url，如果需要复写这个url，则在此处定制，如果不做定制默认就是转向先前记下的url地址
-    <property name="customiedSavedRequestUrl" value="/jump/jump.html"></property>
+    <property name="domainCode" value="techops"/> 
+    <!-- <property name="userInfoClass" value="com.dianrong.common.techops.sscustom.TechOpsUserExtInfo"/> -->
+    <property name="rejectPublicInvocations" value="false"/>
+    <property name="innerCacheUseRedis" value="true"/>
 </bean>
-<sec:http pattern="/views/**" security="none" /> //某些url资源不需要被Spring Security保护
-<sec:http entry-point-ref="casAuthEntryPoint" use-expressions="true" request-matcher="ant">
-    <sec:custom-filter ref="casAuthenticationFilter" position="CAS_FILTER"/>
-    <sec:custom-filter after="EXCEPTION_TRANSLATION_FILTER" ref="exceptionTranslationFilter" />
-    <sec:custom-filter ref="singleLogoutFilter" before="CAS_FILTER" />
-    <sec:custom-filter ref="requestSingleLogoutFilter" before="LOGOUT_FILTER" />
-    <sec:access-denied-handler error-page="/errors/403.jsp"/> //随需定制自己的403 Forbidden页
+
+<sec:http entry-point-ref="casAuthEntryPoint" use-expressions="true"
+          request-matcher="ant" security-context-repository-ref="uniauthSecurityContextRepository"
+          disable-url-rewriting="false">
+    <sec:headers>
+        <sec:frame-options disabled="true"/>
+    </sec:headers>
+    <sec:custom-filter ref="authenticationFilter"
+                       position="CAS_FILTER"/>
+    <sec:custom-filter after="EXCEPTION_TRANSLATION_FILTER"
+                       ref="exceptionTranslationFilter"/>
+    <sec:custom-filter ref="singleLogoutFilter" before="CAS_FILTER"/>
+    <sec:custom-filter ref="requestSingleLogoutFilter"
+                       before="LOGOUT_FILTER"/>
     <sec:csrf disabled="true"/>
-    <sec:custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
-    <sec:session-management session-authentication-strategy-ref="sas" invalid-session-url="#{uniauthConfig['cas_server']}/logout?dupsession=true"/>
-    <sec:logout delete-cookies="JSESSIONID" />
+    <sec:custom-filter position="CONCURRENT_SESSION_FILTER"
+                       ref="concurrencyFilter"/>
+    <sec:session-management session-authentication-strategy-ref="sas"
+                            invalid-session-url="#{uniauthConfig['cas_server']}/login?service=#{uniauthConfig['domains.'+domainDefine.domainCode]}/login/cas"/>
+    <sec:logout delete-cookies="JSESSIONID"/>
     <!-- 在此处可以添加业务系统常用的稳定的intercept-url定义 -->
     // 重要：如果你的系统基于url_pattern进行权限判断，应尽可能地将需要保护的url进行分解和登记，
     //否则就会退而求其次地选用这条规则，因为这条定义是涵盖任何url的默认定义，即登录用户能访问所有url。
     <sec:intercept-url pattern="/**" access="isAuthenticated()"/>
 </sec:http>
-<bean id="exceptionTranslationFilter" class="com.dianrong.common.uniauth.client.custom.SSExceptionTranslationFilter">
-    <constructor-arg name="authenticationEntryPoint" ref="casAuthEntryPoint"></constructor-arg>
+
+<!-- do not change: start -->
+<bean id="exceptionTranslationFilter" class="com.dianrong.common.uniauth.client.custom.filter.SSExceptionTranslationFilter">
+    <constructor-arg ref="casAuthEntryPoint"/>
     <property name="accessDeniedHandler">
         <bean class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
-            <property name="errorPage" value="/errors/403.jsp" />
+            <property name="errorPage" value="/errors/403.jsp"/>
         </bean>
     </property>
 </bean>
-<!-- Session并发控制: start -->
+
 <bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
-    <constructor-arg name="sessionRegistry" ref="sessionRegistry">
-    </constructor-arg>
-    <constructor-arg name="expiredUrl" value="#{uniauthConfig['cas_server']}/logout?dupsession=true">
-    </constructor-arg>
+    <constructor-arg index="0" ref="sessionRegistry"/>
+    <constructor-arg index="1" value="#{uniauthConfig['cas_server']}/logout?dupsession=true"/>
 </bean>
-<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+
+<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl"/>
+
 <bean id="sas" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
     <constructor-arg>
         <list>
@@ -459,75 +467,106 @@ java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -
             </bean>
             <bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
                 <constructor-arg ref="sessionRegistry"/>
-                <property name="maximumSessions" value="1" />
-                <property name="exceptionIfMaximumExceeded" value="false" />
+                <property name="maximumSessions" value="1"/>
+                <property name="exceptionIfMaximumExceeded" value="false"/>
             </bean>
         </list>
     </constructor-arg>
 </bean>
-<bean id="casAuthenticationFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
-    <property name="authenticationManager" ref="authenticationManager"/>
-    <property name="filterProcessesUrl" value="/login/cas"></property>
-    <property name="authenticationSuccessHandler" ref="ssAuthenticationSuccessHandler"></property>
-    <property name="sessionAuthenticationStrategy" ref="sas" />
+
+<!--AuthenticationFilter -->
+<bean id="authenticationFilter" class="com.dianrong.common.uniauth.client.custom.filter.DelegateUniauthAuthenticationFilter">
+    <constructor-arg>
+        <list>
+            <ref bean="casAuthenticationFilter"/>
+            <ref bean="jwtAuthenticationFilter"/>
+            <ref bean="basicAuthAuthenticationFilter"/>
+        </list>
+    </constructor-arg>
+    <constructor-arg value="#{domainDefine.authenticationTypeList}"/>
 </bean>
-<!-- Session并发控制: end -->
-<!--
-    注册PermissionEvaluator实现，以便支持hasPermission表达式，如果不使用则不用配置
-    注意：ID必须为uniauthPermissionEvaluator，且primary="true"
--->
+
+<!-- CAS方式登陆成功之后,验证ST失败的处理Handler -->
+<bean id="ssAuthenticationFailHandler" class="com.dianrong.common.uniauth.client.custom.handler.SSAuthenticationFailureHandler"/>
+
+<bean id="jwtAuthenticationFilter" class="com.dianrong.common.uniauth.client.custom.filter.UniauthJWTAuthenticationFilter">
+    <constructor-arg index="0" ref="uniauthJWTSecurity"/>
+    <constructor-arg index="1" ref="jwtQuery"/>
+    <property name="authenticationManager" ref="authenticationManager"/>
+    <property name="authenticationSuccessHandler" ref="ssAuthenticationSuccessHandler"/>
+    <property name="authenticationFailureHandler" ref="jwtAuthenticationFailureHandler"/>
+    <property name="sessionAuthenticationStrategy" ref="sas"/>
+</bean>
+
+<bean id="casAuthenticationFilter" class="com.dianrong.common.uniauth.client.custom.filter.UniauthCasAuthenticationFilter">
+    <property name="authenticationManager" ref="authenticationManager"/>
+    <property name="filterProcessesUrl" value="/login/cas"/>
+    <property name="authenticationSuccessHandler" ref="ssAuthenticationSuccessHandler"/>
+    <property name="authenticationFailureHandler" ref="ssAuthenticationFailHandler"/>
+    <property name="sessionAuthenticationStrategy" ref="sas"/>
+</bean>
+
+<bean id="basicAuthAuthenticationFilter" class="com.dianrong.common.uniauth.client.custom.filter.UniauthBasicAuthAuthenticationFilter">
+    <property name="authenticationManager" ref="authenticationManager"/>
+    <property name="sessionAuthenticationStrategy" ref="sas"/>
+</bean>
+
+<!-- 提供两个jwt获取的方式,可配置header和parameter名来自定义参数名 -->
+<bean class="com.dianrong.common.uniauth.client.custom.jwt.RequestHeaderJWTQuery"/>
+<bean class="com.dianrong.common.uniauth.client.custom.jwt.RequestParameterJWTQuery"/>
+<!-- do not change: end -->
+<!-- 注册PermissionEvaluator实现，以便支持hasPermission表达式，如果不使用则不用配置
+     注意：ID必须为uniauthPermissionEvaluator，且primary="true" -->
 <bean id="uniauthPermissionEvaluator" class="com.dianrong.common.techops.sscustom.TechOpsPermissionEvaluator" primary="true"></bean>
 ```
 
 ##### (3) 获取当前登录用户
 
-可以通过调用UniClientCommonService这个Spring Bean类的getLoginUserInfo()方法获取当前登录用户对象
+可以通过调用ssclient中LoginUserInfoHolder的getLoginUserInfo()方法获取当前登录用户对象。
 
 ```java
-SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+com.dianrong.common.uniauth.client.custom.LoginUserInfoHolder.getLoginUserInfo();
 ```
 
 #### 5.1.1.2 Spring Boot接入
 
-如果集成的系统使用的是Spring Boot,还需要在5.1.1.1 非Spring Boot系统集成的方式上做一些修改.
+如果集成的系统使用的是Spring Boot，需要配置两部分，系统自定义部分和uniauth提供的模版配置。
 
-##### (1) 将Uniauth的xml配置导入到集成系统的xml配置中。
+##### (1) 系统自定义配置(可以替换为java配置)
 
 ```xml
 <!--引入uniauth的xml配置-->
 <import resource="classpath:ss-uniauth-client.xml" />
 <bean id="domainDefine" class="com.dianrong.common.uniauth.common.client.DomainDefine">
-<property name="domainCode" value="springboot-ssclient"></property>
-<property name="rejectPublicInvocations" value="false"></property>
-<property name="customizedLoginRedirecUrl" value="/content"></property>
+ <property name="domainCode" value="springboot-ssclient"/>
+ <property name="userInfoClass" value="com.dianrong.uniauth.ssclient.bean.SSClientUserExtInfo"/>
+ <property name="rejectPublicInvocations" value="false"/>
+ <property name="customizedLoginRedirecUrl"  value="/content"/>
 </bean>
-<!-- do not change: start -->
-<bean class="org.springframework.security.web.access.AccessDeniedHandlerImpl">
-<property name="errorPage" value="/errors/403.jsp" />
-</bean>
+
 <bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
 <bean id="sas" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
-<constructor-arg>
-<list>
-<bean
-class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
-<constructor-arg ref="sessionRegistry" />
+ <constructor-arg>
+  <list>
+   <bean
+    class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
+    <constructor-arg ref="sessionRegistry" />
+   </bean>
+   <bean
+    class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+    <constructor-arg ref="sessionRegistry" />
+    <property name="maximumSessions" value="1" />
+    <property name="exceptionIfMaximumExceeded" value="false" />
+   </bean>
+  </list>
+ </constructor-arg>
 </bean>
-<bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
-<constructor-arg ref="sessionRegistry" />
-<property name="maximumSessions" value="1" />
-<property name="exceptionIfMaximumExceeded" value="false" />
-</bean>
-</list>
-</constructor-arg>
-</bean>
-<!-- do not change: end -->
+<bean id="uniauthPermissionEvaluator" class="com.dianrong.uniauth.ssclient.bean.SSClientPermissionEvaluator" primary="true"/>
 ```
 
 说明：该配置相对于原来的配置方式，主要是将filter的配置以及spring security的配置给删掉了。
 
-##### (2) 集成系统引入Uniauth的Spring Security代码配置,继承Uniauth提供的Spring Security父类 UniauthSecurityConfig.
-比如在demo springboot-ssclient中的配置如下：
+##### (2) 集成系统引入Uniauth的Spring Security代码配置,继承Uniauth提供的模版UniauthSecurityConfig。
 
 ```java
 @Configuration
@@ -539,7 +578,116 @@ public class WebSecurityConfiguration extends UniauthSecurityConfig {
 }
 ```
 
-说明：在覆写父类的 protected void configure(HttpSecurity http) throws Exception方法进行security的自定义配置时,不要忘记调用super.configure(HttpSecurity http) ;
+说明：模版配置全部在父类的configure(final HttpSecurity http)中，所以如果重写该方法，不要忘记了调用super.configure(http)。UniauthSecurityConfig提供了很多模版方法，集成子系统可以通过重写来自定义配置。
+
+```java
+/**
+ * 构造session错误跳转的url. #{uniauthConfig['cas_server']}/login?
+ * service=#{uniauthConfig['domains.'+domainDefine.domainCode]}/login/cas
+ */
+protected String getInvalidSessionUrl() {
+  String invalidSessionUrl = uniauthConfig.get("cas_server") + "/login?service="
+      + uniauthConfig.get("domains." + domainDefine.getDomainCode()) + "/login/cas";
+  log.info("invalidSessionUrl is " + invalidSessionUrl);
+  return invalidSessionUrl;
+}
+
+
+/**
+ * 获取SessionAuthenticationStrategy.
+ */
+protected SessionAuthenticationStrategy getSessionAuthenticationStrategy() {
+  return this.sas;
+}
+
+/**
+ * 获取AuthEntryPoint.
+ */
+protected AuthenticationEntryPoint getAuthEntryPoint() {
+  return this.casAuthEntryPoint;
+}
+
+/**
+ * 获取SecurityContextRepository.
+ */
+protected SecurityContextRepository getSecurityContextRepository() {
+  return this.securityContextRepository;
+}
+
+
+/**
+ * 获取CasAuthenticationFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected UniauthAbstractAuthenticationFilter getCasAuthenticationFilter() {
+  return beanCreator.create(UniauthCasAuthenticationFilter.class);
+}
+
+/**
+ * 获取JWTAuthenticationFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected UniauthAbstractAuthenticationFilter getJWTAuthenticationFilter() {
+  return beanCreator.create(UniauthJWTAuthenticationFilter.class);
+}
+
+/**
+ * 获取BasicAuthAuthenticationFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected UniauthAbstractAuthenticationFilter getBasicAuthAuthenticationFilter() {
+  return beanCreator.create(UniauthBasicAuthAuthenticationFilter.class);
+}
+
+/**
+ * 获取UniauthAuthenticationFilter.一般情况下该filter用于代理Uniauth中提供的所有的AuthenticationFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected Filter getUniauthAuthenticationFilter() {
+  ...
+  return beanCreator.create(DelegateUniauthAuthenticationFilter.class, args);
+}
+
+/**
+ * 获取ConcurrentSessionFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected Filter getConcurrentSessionFilter() {
+  return beanCreator.create(ConcurrentSessionFilter.class);
+}
+
+/**
+ * 获取LogoutFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected Filter getLogoutFilter() {
+  return beanCreator.create(LogoutFilter.class);
+}
+
+/**
+ * 获取SingleSignOutFilter.支持SSO,该filter必须要有.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected Filter getSingleSignOutFilter() {
+  return beanCreator.create(SingleSignOutFilter.class);
+}
+
+/**
+ * 获取ExceptionTranslationFilter.
+ *
+ * @return 返回结果可为空, 为空则不配置该filter.
+ */
+protected Filter getExceptionTranslationFilter() {
+  return beanCreator.create(SSExceptionTranslationFilter.class);
+}
+```
 
 ### 5.2.非Spring系统
 
@@ -551,7 +699,7 @@ jar包：'org.jasig.cas.client:cas-client-core:3.4.1'
 
 ##### (2) 添加filter
 
-说明：需要添加三个filter，SingleSignOutFilter（统一登出filter），AuthenticationFilter（统一认证） ，Cas20ProxyReceivingTicketValidationFilter（ticket验证filter）
+说明：需要添加三个filter，SingleSignOutFilter（统一登出filter），AuthenticationFilter（统一认证），Cas20ProxyReceivingTicketValidationFilter（ticket验证filter）
 
 使用方式举例（以jetty内置服务器为例，其他tomcat容器的配置类似）
 
@@ -573,9 +721,9 @@ ticketValidationFilter.setInitParameter("casServerUrlPrefix", "http://localhost:
 root.addFilter(ticketValidationFilter, "/*", Handler.DEFAULT);
 ```
 
-注意：可以注意到添加filter的顺序，SingleSignOutFilter -> AuthenticationFilter -> ticketValidationFilter
+注意：可以注意到添加filter的顺序，1 SingleSignOutFilter，2 AuthenticationFilter，3 ticketValidationFilter。
 
-#### 5.2.2经过上面的Filter后，可从session中 获取登陆人Principal
+#### 5.2.2 登录成功之后可从session中获取登陆人Principal
 
 ```java
 Assertion assertion = （Assertion）session.getAttribute(AbstractCasFilter.CONST_CAS_ASSERTION)；
@@ -584,22 +732,19 @@ AttributePrincipal principal = assertion.getPrincipal(); // principal中有登�
 
 说明：其中CONST_CAS_ASSERTION为字符串“_const_cas_assertion_”，可以直接使用AbstractCasFilter.CONST_CAS_ASSERTION获取。
 
-#### 5.2.3登陆用户信息获取
-
-1. 首先通过第2.3步得到的AttributePrincipal对象
-2. 获取principal的attribute属性,如：principal.getAttributes().get("tenancyid"),返回租户的id
+#### 5.2.3 登陆用户信息获取
+1. 首先通过第5.2.2步得到的AttributePrincipal对象。
+2. 获取principal中的租户id，principal.getAttributes().get("tenancyid")，返回租户的id。该attribute还有其他属性：登录账号，用户主键id等。
 3. call uniauth的api获取用户信息：
 
 ```java
 // 构造登陆参数
 LoginParam loginParam = new LoginParam();
-// 用户
-emailloginParam.setAccount(userName);
-// 设置租户
-idloginParam.setTenancyId(tenancyId);// 设置租户id（用于uniauth统计调用日志）
-CxfHeaderHolder.TENANCYID.set(tenancyId);
-Response<UserDetailDto> response = uniClientFacade.getUserResource().getUserDetailInfo(loginParam);// 清空租户
-idCxfHeaderHolder.TENANCYID.set(null);
+emailloginParam.setAccount(account); // 登录账号
+idloginParam.setTenancyId(tenancyId); // 账号所在租户的id
+
+// 访问uniauth-server接口获取用户详情
+Response<UserDetailDto> response = uniClientFacade.getUserResource().getUserDetailInfo(loginParam);
 ```
 
 <a id='sdk'/>
