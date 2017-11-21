@@ -46,6 +46,7 @@ gradle warTechopsWebsite
 #### (1) **添加环境参数**
 
 ##### linux环境
+
 修改tomcat bin目录中`catalina.sh`文件，在正文首行后加入下面环境参数：
 ``` shell
 # log path
@@ -58,13 +59,14 @@ export DR_CFG_ZOOKEEPER_ENV_URL
 ```
 
 ##### windows环境
+
 修改tomcat bin目录中`catalina.bat`文件，可在`set "JAVA_OPTS=%JAVA_OPTS% %LOGGING_CONFIG%"`这一命令下加入下面环境参数：
 ``` bat
-# log path
+rem log path
 set DR_CFG_ZOOKEEPER_ENV_URL=-DDR_CFG_ZOOKEEPER_ENV_URL=10.8.12.85:2181,10.8.12.85:2182,10.8.12.85:2183
 set "JAVA_OPTS=%JAVA_OPTS% %DR_CFG_ZOOKEEPER_ENV_URL%"
 
-# zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
+rem zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
 set APPLICATION.LOGS=-Dcatalina.logs=D:\logs\tomcat\tomcat8080
 set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 ```
@@ -94,7 +96,10 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 /com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false //指定uniauth-server的api访问是否需要权限验证. 默认为true
 /com/dianrong/cfg/1.0.0/uniauth/apicall.techops.pwd =610{8(lxt42nslg*k9q9|5z!:3@~9e72#|rw1*6arz5zad@7+muh!e-w792 // apicall.check.switch为true的时候,必须设置该节点,指定techops和cas访问uniauth-server接口的密码. 该值与api_caller_info表中的password值一致即可
 ```
-zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过在catalina.sh中 `export DR_CFG_ZOOKEEPER_BASE_PATH`变量来更改
+zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改。
+
+* linux环境：   在catalina.sh中设置 `export DR_CFG_ZOOKEEPER_BASE_PATH=/newPath`
+* windows环境： 在catalina.bat中设置 `set DR_CFG_ZOOKEEPER_BASE_PATH=/newPath`
 
 ### 2.5.部署启动
 
