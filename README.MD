@@ -18,7 +18,7 @@ Uniauth项目的开源QQ交流群号: 463056564  欢迎您的加入
 
 ### 1.2.uniauth技术选型
 
-基于`jdk7`,使用`spring mvc4.2+mybatis3+spring security4+cas+cxf`作为基础框架，数据库为`mysql5.7`，配置管理使用`zookeeper3.4`，`redis` 作为可选项用于保存ticket和session信息，前端使用`angularJS 1.x`；
+基于`jdk7`,使用`spring mvc4.2+mybatis3+spring security4+cas+cxf`作为基础框架，数据库为`mysql5.7`，配置管理使用`zookeeper3.4`，`redis`用于存储ticket，缓存使用，前端使用`angularJS 1.x`；
  
 <a id='quickstart'/>
 
@@ -38,7 +38,7 @@ gradle warTechopsWebsite
 
 ### 2.2.初始化数据库
 
-在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`中的脚本。为了方便执行初始化脚本，某些版本中将多个rt的脚本集合到一起，比如：rt115-rt176-all-in-one.sql，代表将rt115到rt176的脚本集合在了一个脚本文件中。；
+在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`中的脚本。为了方便执行初始化脚本，某些版本中将多个rt的脚本集合到一起，比如：rt115-rt176-all-in-one.sql，代表将rt115到rt176的脚本集合在了一个脚本文件中。
 管理员账号：`first.admin@test.com`，密码： `$1234qweR`
 
 ### 2.3.配置`tomcat7`
@@ -89,12 +89,24 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 在zokeeper中`create`以下节点(当然需要先创建`/com`，`/com/dianrong`，`/com/dianrong/cfg`，`/com/dianrong/cfg/1.0.0`，`/com/dianrong/cfg/1.0.0/uniauth`这5个父节点)
 
 ``` shell
-/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure false   // 线上环境一定是true
+/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure false   // 线上环境一定是true
 /com/dianrong/cfg/1.0.0/uniauth/cas_server http://localhost:8081/cas // cas服务器的部署base地址
 /com/dianrong/cfg/1.0.0/uniauth/domains.techops http://localhost:8082/techops // techops的部署base地址
 /com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8080/uniauth/ws/rs  // uniauth的webservice endpoint地址，base+/ws/rs
-/com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false //指定uniauth-server的api访问是否需要权限验证. 默认为true
-/com/dianrong/cfg/1.0.0/uniauth/apicall.techops.pwd =610{8(lxt42nslg*k9q9|5z!:3@~9e72#|rw1*6arz5zad@7+muh!e-w792 // apicall.check.switch为true的时候,必须设置该节点,指定techops和cas访问uniauth-server接口的密码. 该值与api_caller_info表中的password值一致即可
+/com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false // 关闭uniauth-server的api访问控制
+/com/dianrong/cfg/1.0.0/uniauth/redis.password          指定redis密码，如果没有密码则不配置该节点。
+/com/dianrong/cfg/1.0.0/uniauth/redis.type              采用redis的类型.可配置值为:SINGLE(默认值),CLUSTER,SENTINEL。
+-- 以下为redis的额外配置，根据配置redis.type类型的不同选择配置以下参数：
+  a 单节点模式
+   /com/dianrong/cfg/1.0.0/uniauth/redis.host           redis的host
+   /com/dianrong/cfg/1.0.0/uniauth/redis.port           redis的port
+  b 哨兵模式
+   /com/dianrong/cfg/1.0.0/uniauth/redis.master         指定master节点name
+   /com/dianrong/cfg/1.0.0/uniauth/redis.sentinels      指定 redis哨兵的节点列表,例如：10.18.19.67:5000,10.18.19.51:5000,10.18.19.101:5000
+  c 集群模式
+   /com/dianrong/cfg/1.0.0/uniauth/redis.maxRedirects   集群中请求失败之后,最多的转发次数.默认为:5.
+   /com/dianrong/cfg/1.0.0/uniauth/redis.clusters       指定 redis集群节点列表,例如：10.18.19.67:5000,10.18.19.51:5000,10.18.19.101:5000
+
 ```
 zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改。
 
