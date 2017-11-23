@@ -882,7 +882,7 @@ public static void main(String args[]) {
 
 #### 7.3.1 Uniauth中的账号类型
 
-   目前Uniauth中有两种账号：
+    目前Uniauth中有两种账号：
    
     `普通账号` 即通过登录接口登录的用户账号，该类型账号3个月需要修改一次密码。
    
@@ -890,6 +890,8 @@ public static void main(String args[]) {
 
 #### 7.3.2 Basic auth的访问方式
    
-   普通的Basic auth需要提供account，password即可完成认证。
-   Uniauth是有多租户的概念的，所以除了account和password之外，还需要一个租户标识，即tenancyCode。所以Uniauth的basic auth是需要提供tenancyCode，account，password。 只需要将tenancyCode和account拼凑为：tenancyCode:account作为账号传入即可。
-   例如：tenancyCode为dianrong，account为admin@dianrong.com，则通过Basic auth访问需要传入的account为：dianrong:admin@dianrong.com
+    普通的Basic auth需要提供account，password即可完成认证。
+    
+    Uniauth是有多租户的概念的，所以除了account和password之外，还需要一个租户标识，即tenancyCode。所以Uniauth的basic auth是需要提供tenancyCode，account，password。 只需要将tenancyCode和account拼凑为：tenancyCode:account作为账号传入即可。
+    
+    例如：tenancyCode为dianrong，account为admin@dianrong.com，则通过Basic auth访问需要传入的account为：dianrong:admin@dianrong.com
