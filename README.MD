@@ -873,6 +873,22 @@ public static void main(String args[]) {
     
 ### 7.2 Uniauth支持jwt
 
-在DomainDefine的配置参数中已经提到了authenticationType是可以配置为JWT的。集成unauth的子系统是可以支持JWT访问的。
+   Uniauth对jwt有支持。Cas登录成功之后，不仅会生成service ticket，同时也会往浏览器的cookie中写入名叫uniauth_jwt的cookie，集成系统如果检测到有jwt，就通过jwt来完成身份认证。同时jwt对session没有依赖，就完成了无状态的访问。
 
 ### 7.3 集成uniauth的子系统支持basic auth
+   
+   如果集成Uniauth的子系统需要被其他系统访问Api，这怎么办呢？
+   Uniauth提供了通过Basic auth的认证方式。其他系统如果需要访问子系统Api，只需要通过basic auth的方式访问接口即可，免除了冗长的登录过程(访问cas，获取st或者jwt，然后再访问子系统)，同时也是无状态的。
+
+#### 7.3.1 Uniauth中的账号类型
+
+   目前Uniauth中有两种账号：
+   
+   * `普通账号` 即通过登录接口登录的用户账号，该类型账号3个月需要修改一次密码。
+   * `系统账号` 专门用于Basic auth的访问访问集成子系统，没有定时密码修改需求。
+
+#### 7.3.2 Basic auth的访问方式
+   
+   普通的Basic auth需要提供account，password即可完成认证。
+   Uniauth是有多租户的概念的，所以除了account和password之外，还需要一个租户标识，即tenancyCode。所以Uniauth的basic auth是需要提供tenancyCode，account，password。 只需要将tenancyCode和account拼凑为：tenancyCode:account作为账号传入即可。
+   例如：tenancyCode为dianrong，account为admin@dianrong.com，则通过Basic auth访问需要传入的account为：dianrong:admin@dianrong.com
