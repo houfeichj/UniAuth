@@ -126,7 +126,7 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 
 ## 三. 系统结构
 
-### 3.1. 模块组件依赖
+### 3.1.模块组件依赖
 
 ![uniauth模块依赖图.png](http://upload-images.jianshu.io/upload_images/4122900-04105bd9cba75464.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
@@ -170,7 +170,8 @@ zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通�
 
 目前所有参数都是配置在`zookeeper`中
 
-### 4.1. redis相关配置
+### 4.1.redis相关配置
+
 #### 通用配置:
 
 ``` shell
@@ -380,7 +381,7 @@ java -jar json-web-key-generator-0.4-SNAPSHOT-jar-with-dependencies.jar -t oct -
 
 ### 5.1.Spring系统
 
-#### 5.1.1 非Spring boot系统
+#### 5.1.1非Spring boot系统
 
 客户端系统需要使用[spring security](http://projects.spring.io/spring-security/)，引入`ss-client`模块的jar包
 下面以`techops`项目为例
