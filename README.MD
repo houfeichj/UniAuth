@@ -894,4 +894,4 @@ public static void main(String args[]) {
     
     Uniauth是有多租户的概念的，所以除了account和password之外，还需要一个租户标识，即tenancyCode。所以Uniauth的basic auth是需要提供tenancyCode，account，password。 只需要将tenancyCode和account拼凑为：tenancyCode:account作为账号传入即可。
     
-    例如：tenancyCode为dianrong，account为admin@dianrong.com，则通过Basic auth访问需要传入的account为：dianrong:admin@dianrong.com
+    例如：tenancyCode为dianrong，account为admin，则通过Basic auth访问需要传入的account为：dianrong:admin
