@@ -696,7 +696,7 @@ protected Filter getExceptionTranslationFilter() {
 
 ```config
 # 指定当前集成系统的域名code，该code与zk和techops的域名模块中配置的域名code要一致。通过该code,uniauth能找到该域的配置信息
-domainCode
+`domainCode`
 
 # 指定集成系统登录成功之后返回的登录用户对象实现, 该实现必须集成自uniauth提供的UserExtInfo。其中有uniauth自动填充的用户信息，权限信息等。
 userInfoClass
