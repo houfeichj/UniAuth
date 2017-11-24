@@ -867,23 +867,23 @@ public static void main(String args[]) {
 
 1. **URI_PATTERN**：
 
-效果和Spring Security配置文件中的`<sec:intercept-url pattern="/xxx" access="hasAnyRole('ROLE_XXX','ROLE_YYY','ROLE_ZZZ')" />`一样，主要用于Web形式的URL资源定义。可用于保护真实URL访问地址，或者用于`<sec:authorize url="/xxx">`的标签中。
+    效果和Spring Security配置文件中的`<sec:intercept-url pattern="/xxx" access="hasAnyRole('ROLE_XXX','ROLE_YYY','ROLE_ZZZ')" />`一样，主要用于Web形式的URL资源定义。可用于保护真实URL访问地址，或者用于`<sec:authorize url="/xxx">`的标签中。
 
-需要尤其指明的是，如果你的多个role共享了一个role_code，则使用URL_PATTERN可能会有影响。
+    需要尤其指明的是，如果你的多个role共享了一个role_code，则使用URL_PATTERN可能会有影响。
 
-注意：无论在Spring Security中还是在db中都可以定义url pattern的允许访问的http method，如GET，POST等等，如果不指定则该url默认支持所有类型的http method。比如在配置文件中：`<sec:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" **method="GET"**/>`在使用method定义时，这里面有一个注意点，就是Spring Security默认会优先比较请求的http method和定义中的是否匹配，如果不匹配则该条定义就直接被忽略掉了，哪怕url本身是匹配的。所以如果你要使用http method保护你的url，则应该把controller中需要受保护的url模式和可访问方法进行完整定义(在配置文件或db中)，这样才能起到应有的作用。
+    注意：无论在Spring Security中还是在db中都可以定义url pattern的允许访问的http method，如GET，POST等等，如果不指定则该url默认支持所有类型的http method。比如在配置文件中：`<sec:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" **method="GET"**/>`在使用method定义时，这里面有一个注意点，就是Spring Security默认会优先比较请求的http method和定义中的是否匹配，如果不匹配则该条定义就直接被忽略掉了，哪怕url本身是匹配的。所以如果你要使用http method保护你的url，则应该把controller中需要受保护的url模式和可访问方法进行完整定义(在配置文件或db中)，这样才能起到应有的作用。
 
 2. **DOMAIN**：
-
-TechOps使用的专有Permission Type，其他业务系统可以忽略此种类型的Permission。
+ 
+    TechOps使用的专有Permission Type，其他业务系统可以忽略此种类型的Permission。
 
 3. **PRIVILEGE**：
 
-各个业务系统可以根据自己的需要定义权限控制点列表，这些权限用于保护任何需要保护的资源，比如通过SpEL表达式principal.hasPrivilege('xxx')。注意：不像` URI_PATTERN`，这种权限类型不参与Spring Security的内部权限控制机制，适用于纯业务级别权限控制点的定义。
+    各个业务系统可以根据自己的需要定义权限控制点列表，这些权限用于保护任何需要保护的资源，比如通过SpEL表达式principal.hasPrivilege('xxx')。注意：不像` URI_PATTERN`，这种权限类型不参与Spring Security的内部权限控制机制，适用于纯业务级别权限控制点的定义。
     
 4. **REGULAR_PATTERN**：
 
-根据正则表达式来匹配请求，然后进行权限判断。该类型与`URI_PATTERN`权限类型，区别是：`URI_PATTERN`是根据请求的url唯一匹配一个权限，然后判断当前用户是否有对应权限访问。但是`REGULAR_PATTERN`将请求url依次匹配当前登录用户的所有regular_pattern类型权限，如果其中某一个权限判定通过，则判断有权限访问。
+    根据正则表达式来匹配请求，然后进行权限判断。该类型与`URI_PATTERN`权限类型，区别是：`URI_PATTERN`是根据请求的url唯一匹配一个权限，然后判断当前用户是否有对应权限访问。但是`REGULAR_PATTERN`将请求url依次匹配当前登录用户的所有regular_pattern类型权限，如果其中某一个权限判定通过，则判断有权限访问。
     
 ### 7.2 Uniauth支持jwt
 
