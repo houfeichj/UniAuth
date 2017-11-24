@@ -110,7 +110,7 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 # 采用redis的类型.可配置值为:SINGLE(默认值),CLUSTER,SENTINEL
 /com/dianrong/cfg/1.0.0/uniauth/redis.type SINGLE
 ```
-根据redis.type的配置值，还需要配置redis的其他配置值，[具体请查看](#redis-config)
+根据redis.type的配置值，还需要配置redis的其他配置值，[具体请查看](#redis-config)。
 
 zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改。
 
