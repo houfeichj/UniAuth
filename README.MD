@@ -38,7 +38,7 @@ gradle warTechopsWebsite
 
 ### 2.2.初始化数据库
 
-在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`中的脚本。为了方便执行初始化脚本，某些版本中将多个rt的脚本集合到一起，比如：rt115-rt176-all-in-one.sql，代表将rt115到rt176的脚本集合在了一个脚本文件中。
+在mysql中`create database uniauth`，然后按rt顺序执行`uniauth-server/src/script/sql`中的脚本。为了方便执行初始化脚本，某些版本中将多个rt的脚本集合到一起，比如：rt115-rt176-all-in-one.sql，代表将rt115到rt176的脚本集合在了一个脚本文件中。同一个rt的sql，ddl先于dml执行。
 管理员账号：`first.admin@test.com`，密码： `$1234qweR`
 
 ### 2.3.配置`tomcat7`
