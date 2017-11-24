@@ -61,12 +61,12 @@ JAVA_OPTS="$JAVA_OPTS -DR_CFG_ZOOKEEPER_ENV_URL=10.8.12.85:2181,10.8.12.85:2182,
 修改tomcat bin目录中`catalina.bat`文件，可在`set "JAVA_OPTS=%JAVA_OPTS% %LOGGING_CONFIG%"`这一命令下加入下面环境参数：
 ``` bat
 rem log path
-set DR_CFG_ZOOKEEPER_ENV_URL=-DDR_CFG_ZOOKEEPER_ENV_URL=10.8.12.85:2181,10.8.12.85:2182,10.8.12.85:2183
-set "JAVA_OPTS=%JAVA_OPTS% %DR_CFG_ZOOKEEPER_ENV_URL%"
-
-rem zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
 set APPLICATION.LOGS=-Dcatalina.logs=D:\logs\tomcat\tomcat8080
 set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
+
+rem zookeeper cluster address (zookeeper集群不是必须的, 可单节点)
+set DR_CFG_ZOOKEEPER_ENV_URL=-DDR_CFG_ZOOKEEPER_ENV_URL=10.8.12.85:2181,10.8.12.85:2182,10.8.12.85:2183
+set "JAVA_OPTS=%JAVA_OPTS% %DR_CFG_ZOOKEEPER_ENV_URL%"
 ```
 
 #### (2) **修改端口**
