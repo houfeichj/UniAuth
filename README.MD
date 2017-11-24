@@ -89,13 +89,26 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 在zokeeper中`create`以下节点(当然需要先创建`/com`，`/com/dianrong`，`/com/dianrong/cfg`，`/com/dianrong/cfg/1.0.0`，`/com/dianrong/cfg/1.0.0/uniauth`这5个父节点)
 
 ``` shell
-/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure false   // 线上环境一定是true
-/com/dianrong/cfg/1.0.0/uniauth/cas_server http://localhost:8081/cas // cas服务器的部署base地址
-/com/dianrong/cfg/1.0.0/uniauth/domains.techops http://localhost:8082/techops // techops的部署base地址
-/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8080/uniauth/ws/rs  // uniauth的webservice endpoint地址，base+/ws/rs
-/com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false  // 关闭uniauth-server的api访问控制
-/com/dianrong/cfg/1.0.0/uniauth/redis.password          // 指定redis密码，如果没有密码则不配置该节点。
-/com/dianrong/cfg/1.0.0/uniauth/redis.type              // 采用redis的类型.可配置值为:SINGLE(默认值),CLUSTER,SENTINEL。
+# 线上环境一定是true
+/com/dianrong/cfg/1.0.0/uniauth/cas_server.iscookiesecure false
+
+# cas服务器的部署base地址
+/com/dianrong/cfg/1.0.0/uniauth/cas_server http://localhost:8081/cas
+
+# techops的部署base地址
+/com/dianrong/cfg/1.0.0/uniauth/domains.techops http://localhost:8082/techops
+
+# uniauth的webservice endpoint地址，base+/ws/rs
+/com/dianrong/cfg/1.0.0/uniauth/uniauth_ws_endpoint http://localhost:8080/uniauth/ws/rs
+
+# 关闭uniauth-server的api访问控制
+/com/dianrong/cfg/1.0.0/uniauth/apicall.check.switch false  
+
+# 指定redis密码，如果没有密码则不配置该节点
+/com/dianrong/cfg/1.0.0/uniauth/redis.password pwd
+
+# 采用redis的类型.可配置值为:SINGLE(默认值),CLUSTER,SENTINEL
+/com/dianrong/cfg/1.0.0/uniauth/redis.type SINGLE
 ```
 根据redis.type的配置值，还需要配置redis的其他配置值，[具体请查看](#redis-config)
 
