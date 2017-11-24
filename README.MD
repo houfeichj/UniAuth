@@ -112,7 +112,7 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 ```
 根据redis.type的配置值，还需要配置redis的其他配置值，[具体请查看](#redis-config)。
 
-zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改。
+zookeeper的配置根路径为`/com/dianrong/cfg/1.0.0`, 该默认路径可通过设置环境变量DR_CFG_ZOOKEEPER_BASE_PATH来更改，同时以上节点路径都需要做相应的修改。
 
 * linux环境：   在catalina.sh中设置 `export DR_CFG_ZOOKEEPER_BASE_PATH=/newPath`
 * windows环境： 在catalina.bat中设置 `set DR_CFG_ZOOKEEPER_BASE_PATH=/newPath`
