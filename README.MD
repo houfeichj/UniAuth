@@ -81,7 +81,7 @@ set "JAVA_OPTS=%JAVA_OPTS% %APPLICATION.LOGS%"
 在tomcat_uniauth的`context.xml`中
 
 ``` xml
-<Resource name="jdbc/uniauth" auth="Container" type="javax.sql.DataSource" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/uniauth?useUnicode=true&characterEncoding=utf8" username="root" password="root" maxActive="50" maxIdle="20" maxWait="200" />
+<Resource name="jdbc/uniauth" auth="Container" type="javax.sql.DataSource" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/uniauth?useUnicode=true&amp;characterEncoding=utf8" username="root" password="root" maxActive="50" maxIdle="20" maxWait="200" />
 ```
 
 ### 2.4.配置zookeeper(必要配置)
